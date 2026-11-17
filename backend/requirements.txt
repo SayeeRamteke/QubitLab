@@ -1,0 +1,5 @@
+fastapi[standard]
+uvicorn
+qiskit
+qiskit-aer
+sqlalchemy
