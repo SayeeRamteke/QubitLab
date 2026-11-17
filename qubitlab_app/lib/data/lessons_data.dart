@@ -37,7 +37,7 @@ const lessonsData = <Lesson>[
     id: 1,
     module: 0,
     title: 'Meet the qubit',
-    youtubeId: 'HSM1GfukQMI&t=18s',
+    youtubeId: 'rD_fH7O-D5Y',
     paragraphs: [
       'A classical bit is either 0 or 1. A qubit is the quantum version: when you measure it you still get 0 or 1, but before measuring it can be in a blend of both.',
       'Every qubit starts in the state |0>. Gates are the operations that change it. The X gate is the simplest: it flips |0> into |1>.',
@@ -117,7 +117,7 @@ const lessonsData = <Lesson>[
     id: 6,
     module: 2,
     title: 'Entanglement and Bell states',
-    youtubeId: 'GSsElSQgMbU&t=1900s',
+    youtubeId: 'rqmIVeheTVU&t=5s',
     paragraphs: [
       'Apply H to the control and then CNOT, and the two qubits become entangled: they are perfectly correlated, yet neither has a definite value on its own.',
       'This is the Bell state. Long-press a qubit label in the Lab afterwards: its Bloch vector shrinks to zero, which is the signature of entanglement.',

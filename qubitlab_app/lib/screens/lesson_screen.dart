@@ -42,7 +42,10 @@ class _LessonScreenState extends State<LessonScreen> {
       _yt = YoutubePlayerController.fromVideoId(
         videoId: l.youtubeId,
         autoPlay: false,
-        params: const YoutubePlayerParams(),
+        params: const YoutubePlayerParams(
+          showControls: true,
+          showFullscreenButton: true,
+        ),
       );
     }
   }
