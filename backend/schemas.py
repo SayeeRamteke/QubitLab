@@ -33,8 +33,16 @@ class CircuitRequest(BaseModel):
         return self
 
 
+class BlochVector(BaseModel):
+    qubit: int
+    x: float
+    y: float
+    z: float
+
+
 class SimulateResponse(BaseModel):
     results: dict[str, float]
+    bloch_vectors: Optional[list[BlochVector]] = None
 
 
 class UserCreate(BaseModel):
@@ -106,13 +114,6 @@ class LessonComplete(BaseModel):
 class ProgressOut(BaseModel):
     completed_lessons: list[int]
     completed_challenges: list[int]
-
-
-class BlochVector(BaseModel):
-    qubit: int
-    x: float
-    y: float
-    z: float
 
 
 class BlochOut(BaseModel):

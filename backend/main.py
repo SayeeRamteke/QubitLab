@@ -69,7 +69,10 @@ def get_user_or_404(db: Session, user_id: int) -> models.User:
 # ---------- quantum ----------
 @app.post("/simulate", response_model=schemas.SimulateResponse)
 def simulate(req: schemas.CircuitRequest):
-    return {"results": quantum.simulate(req)}
+    return {
+        "results": quantum.simulate(req),
+        "bloch_vectors": quantum.bloch_vectors(req),
+    }
 
 
 @app.post("/bloch", response_model=schemas.BlochOut)

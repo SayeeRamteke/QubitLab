@@ -13,6 +13,16 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+class SimulationResult {
+  final Map<String, double> probabilities;
+  final List<Map<String, dynamic>> blochVectors;
+
+  const SimulationResult({
+    required this.probabilities,
+    required this.blochVectors,
+  });
+}
+
 class ApiService {
   final http.Client _client = http.Client();
 
@@ -54,6 +64,18 @@ class ApiService {
   Future<Map<String, double>> simulate(Map<String, dynamic> circuit) async {
     final d = await _send('POST', '/simulate', body: circuit);
     return (d['results'] as Map).map((k, v) => MapEntry(k as String, (v as num).toDouble()));
+  }
+
+  Future<SimulationResult> simulateDetailed(Map<String, dynamic> circuit) async {
+    final d = await _send('POST', '/simulate', body: circuit);
+    final probs = (d['results'] as Map).map((k, v) => MapEntry(k as String, (v as num).toDouble()));
+    List<Map<String, dynamic>> vectors;
+    if (d['bloch_vectors'] is List) {
+      vectors = _list(d['bloch_vectors']);
+    } else {
+      vectors = await bloch(circuit);
+    }
+    return SimulationResult(probabilities: probs, blochVectors: vectors);
   }
 
   Future<List<Map<String, dynamic>>> bloch(Map<String, dynamic> circuit) async {

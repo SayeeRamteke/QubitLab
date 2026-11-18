@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/gate.dart';
+import '../utils/circuit_code_parser.dart';
 
 /// Holds the circuit being built. The Lab uses one global instance;
 /// lessons and Arena challenges create their own local instance.
@@ -108,6 +109,27 @@ class CircuitProvider extends ChangeNotifier {
       ));
     }
     notifyListeners();
+  }
+
+  /// Parses code (Qiskit or OpenQASM) and sets up the circuit.
+  ParsedCircuitResult loadFromCode(String code) {
+    final result = CircuitCodeParser.parse(code);
+    if (!result.isSuccess) return result;
+
+    _gates.clear();
+    _qubits = result.qubits.clamp(1, maxQubits);
+    _idSeq = 0;
+    for (final g in result.gates) {
+      _gates.add(PlacedGate(
+        id: 'g${_idSeq++}',
+        type: g.type,
+        column: g.column,
+        target: g.target,
+        control: g.control,
+      ));
+    }
+    notifyListeners();
+    return result;
   }
 
   List<PlacedGate> get _sorted =>
