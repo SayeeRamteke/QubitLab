@@ -10,6 +10,7 @@ class Gate(BaseModel):
     type: Literal["H", "X", "Y", "Z", "S", "T", "CNOT", "CZ"]
     target: int = Field(ge=0)
     control: Optional[int] = Field(default=None, ge=0)
+    column: Optional[int] = Field(default=None, ge=0)
 
     @model_validator(mode="after")
     def check_control(self):
@@ -118,3 +119,23 @@ class ProgressOut(BaseModel):
 
 class BlochOut(BaseModel):
     vectors: list[BlochVector]
+
+
+class MathStepOut(BaseModel):
+    step_index: int
+    title: str
+    description: str
+    gate_label: str
+    operator_latex: str
+    input_state_latex: str
+    calculation_latex: str
+    output_state_latex: str
+    dirac_latex: str
+    probabilities: dict[str, float]
+
+
+class MathBreakdownResponse(BaseModel):
+    qubits: int
+    dimension: int
+    input_state_latex: str
+    steps: list[MathStepOut]

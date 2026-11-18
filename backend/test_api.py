@@ -31,6 +31,14 @@ with TestClient(app) as c:
     assert all(abs(v["x"]) + abs(v["y"]) + abs(v["z"]) < 1e-3 for v in b)
     print("Bloch Bell  : both vectors ~0 (entangled)")
 
+    # Math breakdown: Bell state should produce 2 steps with 4x4 matrices
+    mb = c.post("/math_breakdown", json={"qubits": 2, "gates": bell}).json()
+    assert mb["qubits"] == 2 and mb["dimension"] == 4
+    assert len(mb["steps"]) == 2
+    assert "bmatrix" in mb["steps"][0]["operator_latex"]
+    assert "vert 00" in mb["steps"][1]["dirac_latex"] and "vert 11" in mb["steps"][1]["dirac_latex"]
+    print("Math Bell   : 2 steps, dimension 4, LaTeX verified")
+
     name = "user_" + uuid.uuid4().hex[:6]
     u = c.post("/users/register", json={"username": name, "password": "secret"}).json()
     assert c.post("/users/login", json={"username": name, "password": "bad!!"}).status_code == 401

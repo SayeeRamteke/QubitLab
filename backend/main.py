@@ -80,6 +80,11 @@ def bloch(req: schemas.CircuitRequest):
     return {"vectors": quantum.bloch_vectors(req)}
 
 
+@app.post("/math_breakdown", response_model=schemas.MathBreakdownResponse)
+def math_breakdown(req: schemas.CircuitRequest):
+    return quantum.math_breakdown(req)
+
+
 # ---------- users ----------
 @app.post("/users/register", response_model=schemas.UserOut, status_code=201)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):

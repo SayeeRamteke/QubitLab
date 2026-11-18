@@ -9,21 +9,59 @@ import '../providers/saved_circuits_provider.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/circuit_workspace.dart';
+import '../widgets/math_breakdown_view.dart';
 import '../widgets/results_sheet.dart';
 
-class LabScreen extends StatelessWidget {
+class LabScreen extends StatefulWidget {
   const LabScreen({super.key});
 
   @override
+  State<LabScreen> createState() => _LabScreenState();
+}
+
+class _LabScreenState extends State<LabScreen> {
+  bool _isMathMode = false;
+
+  @override
   Widget build(BuildContext context) {
-    return const SafeArea(
+    final c = context.watch<CircuitProvider>();
+    return SafeArea(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
         child: Column(
           children: [
-            _LabHeader(),
-            SizedBox(height: 10),
-            Expanded(child: CircuitWorkspace(overlay: _SimulateButton())),
+            _LabHeader(
+              isMathMode: _isMathMode,
+              onToggleMode: (val) => setState(() => _isMathMode = val),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 320),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  final isMath = child.key == const ValueKey('math');
+                  final offsetTween = Tween<Offset>(
+                    begin: Offset(isMath ? 1.0 : -1.0, 0.0),
+                    end: Offset.zero,
+                  );
+                  return SlideTransition(
+                    position: animation.drive(offsetTween),
+                    child: FadeTransition(opacity: animation, child: child),
+                  );
+                },
+                child: _isMathMode
+                    ? MathBreakdownView(
+                        key: const ValueKey('math'),
+                        circuit: c.toJson(),
+                      )
+                    : const CircuitWorkspace(
+                        key: ValueKey('canvas'),
+                        overlay: _SimulateButton(),
+                      ),
+              ),
+            ),
           ],
         ),
       ),
@@ -32,7 +70,13 @@ class LabScreen extends StatelessWidget {
 }
 
 class _LabHeader extends StatefulWidget {
-  const _LabHeader();
+  final bool isMathMode;
+  final ValueChanged<bool> onToggleMode;
+
+  const _LabHeader({
+    required this.isMathMode,
+    required this.onToggleMode,
+  });
 
   @override
   State<_LabHeader> createState() => _LabHeaderState();
@@ -153,31 +197,97 @@ class _LabHeaderState extends State<_LabHeader> {
             ),
           ],
         ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            decoration:
-                BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  onPressed: c.qubits > 1 ? c.removeQubit : null,
-                  icon: const Icon(Icons.remove_rounded),
-                ),
-                Text('${c.qubits} qubit${c.qubits == 1 ? '' : 's'}',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  onPressed: c.qubits < CircuitProvider.maxQubits ? c.addQubit : null,
-                  icon: const Icon(Icons.add_rounded),
-                ),
-              ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              decoration:
+                  BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    onPressed: c.qubits > 1 ? c.removeQubit : null,
+                    icon: const Icon(Icons.remove_rounded),
+                  ),
+                  Text('${c.qubits} qubit${c.qubits == 1 ? '' : 's'}',
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    onPressed: c.qubits < CircuitProvider.maxQubits ? c.addQubit : null,
+                    icon: const Icon(Icons.add_rounded),
+                  ),
+                ],
+              ),
             ),
-          ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _modeButton(
+                    title: 'Canvas',
+                    icon: Icons.grid_view_rounded,
+                    isSelected: !widget.isMathMode,
+                    onTap: () => widget.onToggleMode(false),
+                  ),
+                  const SizedBox(width: 4),
+                  _modeButton(
+                    title: 'Math',
+                    icon: Icons.functions_rounded,
+                    isSelected: widget.isMathMode,
+                    onTap: () => widget.onToggleMode(true),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _modeButton({
+    required String title,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.ink : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 15,
+              color: isSelected ? Colors.white : AppColors.muted,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? Colors.white : AppColors.muted,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

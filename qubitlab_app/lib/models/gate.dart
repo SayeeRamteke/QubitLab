@@ -81,6 +81,7 @@ class PlacedGate {
   Map<String, dynamic> toJson() => {
         'type': type.apiName,
         'target': target,
+        'column': column,
         if (control != null) 'control': control,
       };
 }
